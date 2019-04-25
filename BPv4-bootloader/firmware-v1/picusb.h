@@ -57,7 +57,7 @@ entries common to both PIC families.
 #define USE_ALT_ANCON
 #define BD_RAM = 0x400
 
-#elif defined(__PIC24FJ64GB106__) || defined(__PIC24FJ128GB106__) || defined(__PIC24FJ192GB106__) || defined(__PIC24FJ256GB106__) || defined(__PIC24FJ64GB108__) || defined(__PIC24FJ128GB108__) || defined(__PIC24FJ192GB108__) || defined(__PIC24FJ256GB108__) || defined(__PIC24FJ64GB110__) || defined(__PIC24FJ128GB110__) || defined(__PIC24FJ192GB110__) || defined(__PIC24FJ256GB110__) 
+#elif defined(__PIC24FJ64GA002__) || defined(__PIC24FJ64GB106__) || defined(__PIC24FJ128GB106__) || defined(__PIC24FJ192GB106__) || defined(__PIC24FJ256GB106__) || defined(__PIC24FJ64GB108__) || defined(__PIC24FJ128GB108__) || defined(__PIC24FJ192GB108__) || defined(__PIC24FJ256GB108__) || defined(__PIC24FJ64GB110__) || defined(__PIC24FJ128GB110__) || defined(__PIC24FJ192GB110__) || defined(__PIC24FJ256GB110__) 
 #define PIC_24F
 
 #elif defined(__PIC24FJ32GB002__) || defined(__PIC24FJ32GB004__) || defined(__PIC24FJ64GB002__) || defined(__PIC24FJ64GB004__)
@@ -315,7 +315,7 @@ typedef struct BDENTRY {
 #if defined(PIC_24F)
 
 #define MyProcessor
-#include <p24fxxxx.h>
+#include <p24fj64ga002.h>
 
 #define USTAT_ODD_EVEN (4)              // JTR PIC24 fixup potentially ?? Only required when ping-pong buffering is enabled. 
 #define USTAT_ODD_EVEN_SHIFT (2)        // JTR these are required for BD* calculations and are different for the PIC24

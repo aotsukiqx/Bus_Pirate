@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ds30LoaderSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Debugmode>false</Debugmode>
-  <CheckVerStart>false</CheckVerStart>
+  <CheckVerStart>true</CheckVerStart>
   <WindowOnTop>false</WindowOnTop>
   <WindowWidth>346</WindowWidth>
   <WindowHeight>538</WindowHeight>
-  <Filename>BPv3-Firmware-v4.hex</Filename>
+  <Filename>Y:\Source\My_BusPirate\BPv3-bootloader\firmware-v4.5\dist\default\production\firmware-v4.5.production.hex</Filename>
   <DefaultStartSettings>
     <AdvancedMode>true</AdvancedMode>
     <AdvancedModeAllow>false</AdvancedModeAllow>

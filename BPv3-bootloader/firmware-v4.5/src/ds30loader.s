@@ -85,7 +85,7 @@
 ;------------------------------------------------------------------------------
 ; Includes
 ;------------------------------------------------------------------------------
-		.include "settings.inc"	
+		.include "src/settings.inc"	
 
 
 ;-----------------------------------------------------------------------------
@@ -112,7 +112,7 @@
 				.error "Multiple uarts specified"
 			.endif
 
-		   	.equ    UMODE,	    U1MODE					;uart mode
+		   	.equ    UMODE,	        U1MODE					;uart mode
 		   	.equ    USTA,  		U1STA					;uart status
 		   	.equ    UBRG,		U1BRG					;uart baudrate
 		   	.equ    UTXREG,		U1TXREG					;uart transmit
@@ -125,15 +125,15 @@
 ;------------------------------------------------------------------------------
 ; Constants, don´t change
 ;------------------------------------------------------------------------------
-		.equ	VERMAJ,		1										/*firmware version major*/
-		.equ	VERMIN,		0										/*fimrware version minor*/
-		.equ	VERREV,		2										/*firmware version revision*/
+		.equ	VERMAJ,		1						/*firmware version major*/
+		.equ	VERMIN,		0						/*fimrware version minor*/
+		.equ	VERREV,		2						/*firmware version revision*/
 
 		.equ 	HELLO, 		0xC1		
-		.equ 	OK, 		'K'										/*erase/write ok*/
-		.equ 	CHECKSUMERR,'N'										/*checksum error*/
-		.equ	VERFAIL,	'V'										/*verification failed*/
-		.equ   	BLPROT,     'P'                              		/*bl protection tripped*/
+		.equ 	OK, 		'K'						/*erase/write ok*/
+		.equ 	CHECKSUMERR,    'N'						/*checksum error*/
+		.equ	VERFAIL,	'V'						/*verification failed*/
+		.equ   	BLPROT,         'P'                              		/*bl protection tripped*/
 		
 
 		.equ	BLDELAY,	( BLTIME * (FCY / 1000) / (65536 * 7) )	/*delay berfore user application is loaded*/
@@ -145,8 +145,8 @@
 		.equ	PAGESIZE,	512										/*words*/
 		.equ	ROWSIZE,	64										/*words*/		
 ;		.equ	STARTADDR,	( FLASHSIZE - 2*(PAGESIZE * 2) ) 		/*place bootloader in 2nd last program page*/
-		.equ	STARTADDR,	( FLASHSIZE - (2* (PAGESIZE)) ) 		/*place bootloader in last program page*/
-		.equ	BLCHECKST,  ( STARTADDR - (ROWSIZE) )			/*precalculate the first row write position that would overwrite the bootloader*/
+		.equ	STARTADDR,	( FLASHSIZE - (2* (PAGESIZE)) ) 		/*place bootloader in last program page, 0xA800 for pic24fj64ga002*/ 
+		.equ	BLCHECKST,  ( STARTADDR - (ROWSIZE) )			/*precalculate the first row write position that would overwrite the bootloader, 0xA7C0*/
 		.equ	BLVERSION,	0x0405	;bootloader version for Bus Pirate firmware (located at last instruction before flash config words)
 ;------------------------------------------------------------------------------
 ; Validate user settings
@@ -178,7 +178,7 @@
 ; Uninitialized variables in data memory
 ;------------------------------------------------------------------------------
 		.bss
-buffer:	.space ( ROWSIZE * 3 + 1/*checksum*/ ) 
+buffer:	.space ( ROWSIZE * 3 + 1/*checksum, 0xC1*/ ) 
 
 
 ;------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ buffer:	.space ( ROWSIZE * 3 + 1/*checksum*/ )
 ;------------------------------------------------------------------------------
 ; variables at the end of the bootloader page
 ;------------------------------------------------------------------------------
-		.section *, code, address(STARTADDR+(PAGESIZE*2)-8)
+		.section *, code, address(STARTADDR+(PAGESIZE*2)-8) /* verify code is 0xAEF8 */
 bljump: bra firmwarejump	;main program jump here to access bootloader
 blver: .word BLVERSION ;bootloader major and minor version
 
@@ -200,7 +200,7 @@ blver: .word BLVERSION ;bootloader major and minor version
 ;------------------------------------------------------------------------------
 ; Start of code section in program memory
 ;------------------------------------------------------------------------------
-		.section *, code, address(STARTADDR-4)
+		.section *, code, address(STARTADDR-4)  /* 0x3FC */
 usrapp:	nopr						;these two instructions will be replaced
 		nopr						;with a goto to the user app. by the pc program
 		
@@ -208,7 +208,7 @@ usrapp:	nopr						;these two instructions will be replaced
 ;------------------------------------------------------------------------------
 ; Reset vector
 ;------------------------------------------------------------------------------
-		.section *, code, address(STARTADDR)
+		.section *, code, address(STARTADDR)    /*0x400*/
 __reset:mov 	#__SP_init, WSTPTR	;initalize the Stack Pointer
 
 
@@ -358,7 +358,7 @@ main1:	clr 	WCRC
 		mov.b	WREG, PR1
 		;
 		mov		PR1, WREG
-		mov		W0,	WADDR
+		mov		W0, WADDR
 		mov		W0, WADDR2
 	
 		
@@ -366,7 +366,7 @@ main1:	clr 	WCRC
 		; Receive command
 		;----------------------------------------------------------------------
 		rcall 	Receive
-		mov		W0, WCMD
+		mov	W0, WCMD
 		
 
 		;----------------------------------------------------------------------
@@ -383,7 +383,7 @@ main1:	clr 	WCRC
 rcvdata:
 		rcall 	Receive				
 		mov.b 	W0, [WBUFPTR++]
-		dec		WCNT, WCNT
+		dec	WCNT, WCNT
 		bra 	nz, rcvdata			;last byte received is checksum		
 		
 				
@@ -411,14 +411,14 @@ rcvdata:
 		;if write end address (W0) is <= bl start address (WCNT) then OK
 		;= is ok because we don't DEC after adding, write 10 bytes to 10 = end at 19
 bladdrchk:mov	#BLCHECKST, WCNT	;last row write postion that won't overwrite the bootloader
-		cp		WADDR, WCNT			;compare end address, does it overlap?
+		cp	WADDR, WCNT			;compare end address, does it overlap?
 		bra 	GTU, bladdrerror	;if greater unsigned then error
 		;protect the jump instruction
 		;check if this is row 0
 		;row 0 ends at 0x3f
-		;mov		#0x003f, WCNT
-		cp0		WADDR ;, WCNT		;compare address and end of first row, 
-		bra		NZ, ptrinit	;if greater than unsigned, then OK
+		;mov	#0x003f, WCNT
+		cp0	WADDR ;, WCNT		;compare address and end of first row, 
+		bra	NZ, ptrinit	;if greater than unsigned, then OK
 		;insert the correct jump address
 		;4 00 a8 00 00 00
 		mov 	#buffer, WBUFPTR
